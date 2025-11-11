@@ -1,6 +1,7 @@
-import { Inbox } from '@mui/icons-material';
-import { Avatar, Divider, Drawer, Icon, List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
+
+import { Avatar, useMediaQuery, Divider, Drawer, Icon, List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
+import { useDrawerContext } from '../../contexts';
 
 interface IMenuLateralProps {
     children: React.ReactNode;
@@ -9,11 +10,14 @@ interface IMenuLateralProps {
 
 export const MenuLateral: React.FC<IMenuLateralProps> = ({ children }) => {
     const theme = useTheme();
+    const smDown = useMediaQuery(theme.breakpoints.down('sm'));
+
+    const { isDrawerOpen, toggleDrawerOpen } = useDrawerContext();
 
     return (
         <>
-            <Drawer  variant='permanent'>
-                <Box width={theme.spacing(28)} height="100%" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
+            <Drawer  open={isDrawerOpen} variant={smDown ? 'temporary' : 'permanent'} onClose={toggleDrawerOpen}>
+                <Box width={theme.spacing(28)} height="100%" display="flex" flexDirection="column">
                     
                     <Box width="100%" height={theme.spacing(20)} display="flex" justifyContent="center" alignItems="center">
                         <Avatar sx={{ height: theme.spacing(12), width: theme.spacing(12)}} src="Imagem do WhatsApp de 2025-10-07 à(s) 08.48.01_f43c9bd9.jpg"/>
@@ -38,7 +42,7 @@ export const MenuLateral: React.FC<IMenuLateralProps> = ({ children }) => {
                 </Box>
             </Drawer>
 
-            <Box height="100vh" marginLeft={theme.spacing(28)}>
+            <Box height="100vh" marginLeft={smDown ?  0 : theme.spacing(28)}>
                 {children}
             </Box>
         </>
