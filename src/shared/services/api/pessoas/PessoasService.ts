@@ -22,25 +22,55 @@ type TPessoasComTotalCount = {
 };
 
 const getAll = async (page = 1, filter = ''): Promise<TPessoasComTotalCount | Error> => {
-    try {
-        const urlRelativa = `/pessoas?_page=${page}&_limit=${Enviroment.LIMITE_DE_LINHAS}&nomeCompleto_like=${filter}`;
+  try {
+    // 1. Buscamos TODOS os dados (sem paginar na URL)
+    // Usamos '/pessoas' direto. Se o server limitar, tentamos forçar um limite alto.
+    const urlRelativa = `/pessoas?_per_page=10000`; 
 
-        const { data, headers } = await api.get(urlRelativa);
+    const { data } = await api.get(urlRelativa);
 
-        if (data) {
-            return {
-                data,
-                totalCount: Number(headers['x-total-count'] || Enviroment.LIMITE_DE_LINHAS),
-            };
-        }
-        return new Error('Erro ao listar os registros.');
+    if (data) {
+      // 2. Normalização dos Dados (Compatibilidade v1 vs Antigo)
+      // Se vier no formato novo { data: [...], items: ... }, pegamos o array interno.
+      // Se vier no formato antigo [...], usamos ele direto.
+      let listaCompleta: IListagemPessoa[] = [];
+      
+      if (data.data && Array.isArray(data.data)) {
+        listaCompleta = data.data;
+      } else if (Array.isArray(data)) {
+        listaCompleta = data;
+      }
 
-    } catch (error) {
-        console.error(error);
-        return new Error((error as { massage: string}).massage || 'Erro ao listar os registros.');
+      // 3. Filtragem Manual (Front-end)
+      // Se houver filtro, mantemos apenas quem tem o nome parecido
+      if (filter) {
+        listaCompleta = listaCompleta.filter(item => 
+          item.nomeCompleto.toLowerCase().includes(filter.toLowerCase())
+        );
+      }
 
+      // 4. Paginação Manual (Front-end)
+      // Calculamos onde começa e onde termina a página atual
+      const limite = Enviroment.LIMITE_DE_LINHAS; // Ex: 7
+      const inicio = (page - 1) * limite;
+      const fim = inicio + limite;
+
+      const listaPaginada = listaCompleta.slice(inicio, fim);
+
+      // 5. Retorno
+      return {
+        data: listaPaginada,
+        totalCount: listaCompleta.length, // Total filtrado
+      };
     }
+
+    return new Error('Erro ao listar os registros.');
+  } catch (error) {
+    console.error(error);
+    return new Error((error as { message: string }).message || 'Erro ao listar os registros.');
+  }
 };
+
 
 const getById = async (id: number): Promise<IDetalhePessoa | Error> => {
     try {
