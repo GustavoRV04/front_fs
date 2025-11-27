@@ -4,7 +4,7 @@ export const Enviroment = {
     /**
      * define a quantidade de linhas a ser carregada por padrão nas listagens
      */
-    LIMITE_DE_LINHAS: 7,
+    LIMITE_DE_LINHAS: 8,
     /**
      * Placeholder exibido nas inputs de busca
      */

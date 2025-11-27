@@ -3,7 +3,7 @@ import { Avatar, useMediaQuery, Divider, Drawer, Icon, List, ListItemButton, Lis
 import { Box } from '@mui/system';
 import { useAppThemeContext, useDrawerContext } from '../../contexts';
 import React from 'react';
-import { on } from 'events';
+import { } from 'events';
 import { useMatch, useNavigate, useResolvedPath } from 'react-router-dom';
 
 interface IListItemLinkProps {
