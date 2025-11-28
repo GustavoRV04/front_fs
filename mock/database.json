@@ -2,9 +2,9 @@
   "pessoas": [
     {
       "id": "1",
+      "nomeCompleto": "gustavo Silva",
       "email": "Gus@gmail.com",
-      "cidadeId": 1,
-      "nomeCompleto": "gu Silva"
+      "cidadeId": 1
     },
     {
       "id": "2",
@@ -65,6 +65,18 @@
       "email": "casaas@gmail.com",
       "cidadeId": 1,
       "nomeCompleto": "casrlos  srtu"
+    },
+    {
+      "id": null,
+      "nomeCompleto": "cris gu",
+      "email": "user@localhost.com",
+      "cidadeId": 2
+    },
+    {
+      "id": "5584",
+      "nomeCompleto": "joao luz",
+      "email": "jao@gmail.com",
+      "cidadeId": 2
     }
   ]
 }

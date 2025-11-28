@@ -16,6 +16,8 @@ export interface IDetalhePessoa {
     email: string;
 };
 
+
+
 type TPessoasComTotalCount = {
     data: IListagemPessoa[];
     totalCount: number;
@@ -105,7 +107,7 @@ const create = async (dados: Omit<IDetalhePessoa, 'id'>): Promise<number | Error
 
 };
 
-const UpdateById = async (id: number, dados: IDetalhePessoa): Promise<void | Error> => {
+const updateById = async (id: number, dados: IDetalhePessoa): Promise<void | Error> => {
     try {
         await api.put(`/pessoas/${id}`, dados);
     } catch (error) {
@@ -129,6 +131,6 @@ export const PessoasService = {
     getAll,
     getById,
     create,
-    UpdateById,
+    updateById,
     deleteById,
 };
