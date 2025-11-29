@@ -16,7 +16,8 @@ export const VTextField: React.FC<TVTextFieldProps> = ({ name, control, ...rest 
                     {...rest}
                     {...field}
                     value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value)}
+                    onChange={(e) => {field.onChange(e.target.value); rest.onChange?.(e);}}
+                    onKeyDown={(e) => {rest.onKeyDown?.(e);}}
                     error={!!fieldState.error}
                     helperText={fieldState.error?.message}
                 />

@@ -10,6 +10,7 @@ interface IFerramentasDeDetalheProps {
     mostrarBotaoApagar?: boolean;
     mostrarBotaoSalvar?: boolean;
     mostrarBotaoSalvarEVoltar?: boolean;
+    mostrarBotaoSalvarENovo?: boolean;
 
     mostrarBotaoSalvarCarregando?: boolean;
     mostrarBotaoNovoCarregando?: boolean;
@@ -22,6 +23,7 @@ interface IFerramentasDeDetalheProps {
     aoClicarEmApagar?: () => void;
     aoClicarEmSalvar?: () => void;
     aoClicarEmSalvarEVoltar?: () => void;
+    aoClicarEmSalvarENovo?: () => void;
 
 }
 export const FerramentasDeDetalhe: React.FC<IFerramentasDeDetalheProps> = ({

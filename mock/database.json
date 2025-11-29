@@ -8,9 +8,9 @@
     },
     {
       "id": "2",
+      "nomeCompleto": "fredrico silva",
       "email": "fr@gmail.com",
-      "cidadeId": 1,
-      "nomeCompleto": "frede Silva"
+      "cidadeId": 1
     },
     {
       "id": "3",
@@ -20,9 +20,9 @@
     },
     {
       "id": "4",
+      "nomeCompleto": "gomes domais",
       "email": "gomezzz@gmail.com",
-      "cidadeId": 1,
-      "nomeCompleto": "gomes domas"
+      "cidadeId": 1
     },
     {
       "id": "5",
