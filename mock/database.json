@@ -38,9 +38,9 @@
     },
     {
       "id": "11",
+      "nomeCompleto": "gunthers lubz",
       "email": "Gunther@gmail.com",
-      "cidadeId": 1,
-      "nomeCompleto": "gunthers lubz"
+      "cidadeId": 1
     },
     {
       "id": "12",
@@ -56,9 +56,9 @@
     },
     {
       "id": "14",
+      "nomeCompleto": "gaston dorsmas",
       "email": "gomezrrtzz@gmail.com",
-      "cidadeId": 1,
-      "nomeCompleto": "gsrtomizz dorsmas"
+      "cidadeId": 1
     },
     {
       "id": "15",

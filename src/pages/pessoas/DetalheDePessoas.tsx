@@ -6,13 +6,19 @@ import { IDetalhePessoa, PessoasService } from "../../shared/services/api/pessoa
 import { useForm } from "react-hook-form";
 import { VTextField, useVForm } from "../../shared/forms";
 import { Box, Paper, Stack, Typography, LinearProgress } from "@mui/material";
-
+import * as yup from 'yup';
 
 interface IFormData {
     nomeCompleto: string;
     email: string;
     cidadeId: string;
 }
+
+const formValidationSchema: yup.Schema<IFormData> = yup.object().shape({
+    nomeCompleto: yup.string().required('Nome completo é obrigatório').min(3, 'Nome completo deve ter pelo menos 3 caracteres'),
+    email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
+    cidadeId: yup.string().required('O Id da Cidade é obrigatório')
+});
 
 export const DetalheDePessoas: React.FC = () => {
     const { id = 'nova' } = useParams<'id'>();
@@ -30,8 +36,12 @@ export const DetalheDePessoas: React.FC = () => {
     });
 
     const handleSaveAction = async (data: IFormData): Promise<void> => {
-        setIsLoading(true);
         try {
+            // Validação com Yup
+            await formValidationSchema.validate(data, { abortEarly: false });
+            
+            setIsLoading(true);
+
             // Converter cidadeId de string para number
             const baseData = {
                 nomeCompleto: data.nomeCompleto,
@@ -65,6 +75,22 @@ export const DetalheDePessoas: React.FC = () => {
                     alert('Pessoa atualizada com sucesso!');
                 }
             }
+        } catch (error: any) {
+            // Tratamento de erros de validação do Yup
+            if (error.name === 'ValidationError') {
+                const errorMessages = error.errors.join('\n');
+                alert(errorMessages);
+            } 
+            // Tratamento de erros da API
+            else if (error instanceof Error) {
+                alert(error.message);
+            } 
+            // Erro genérico
+            else {
+                alert('Erro ao salvar os dados');
+            }
+            // Não relançar o erro para evitar que o useVForm tente processá-lo novamente
+            return;
         } finally {
             setIsLoading(false);
         }
@@ -181,7 +207,6 @@ export const DetalheDePessoas: React.FC = () => {
                         sx={{ 
                             width: '100%',
                             maxWidth: { xs: '80%', sm: 400, md: 600, lg: 700 },
-                            margin: '0 auto'
                         }}
                     >
                         {(isLoading) && (
