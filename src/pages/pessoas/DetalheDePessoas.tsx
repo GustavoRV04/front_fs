@@ -15,9 +15,9 @@ interface IFormData {
 }
 
 const formValidationSchema: yup.Schema<IFormData> = yup.object().shape({
-    nomeCompleto: yup.string().required('Nome completo é obrigatório').min(3, 'Nome completo deve ter pelo menos 3 caracteres'),
-    email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
-    cidadeId: yup.string().required('O Id da Cidade é obrigatório')
+    nomeCompleto: yup.string().required().min(3),
+    email: yup.string().email().required(),
+    cidadeId: yup.string().required()
 });
 
 export const DetalheDePessoas: React.FC = () => {
@@ -35,86 +35,94 @@ export const DetalheDePessoas: React.FC = () => {
         }
     });
 
-    const handleSaveAction = async (data: IFormData): Promise<void> => {
-        try {
-            // Validação com Yup
-            await formValidationSchema.validate(data, { abortEarly: false });
-            
-            setIsLoading(true);
+    const handleSaveAction = (data: IFormData): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            formValidationSchema
+                .validate(data, { abortEarly: false })
+                .then((dadosValidados) => {
+                    setIsLoading(true);
 
-            // Converter cidadeId de string para number
-            const baseData = {
-                nomeCompleto: data.nomeCompleto,
-                email: data.email,
-                cidadeId: Number(data.cidadeId)
-            };
+                    // Converter cidadeId de string para number
+                    const baseData = {
+                        nomeCompleto: dadosValidados.nomeCompleto,
+                        email: dadosValidados.email,
+                        cidadeId: Number(dadosValidados.cidadeId)
+                    };
 
-            if (id === 'nova') {
-                // Para criação sem o id
-                const result = await PessoasService.create(baseData);
-                if (result instanceof Error) {
-                    alert(result.message);
-                    throw result;
-                } else {
-                    alert('Pessoa criada com sucesso!');
-                    // Navega para o detalhe do novo registro
-                    navigate(`/pessoas/detalhe/${result}`);
-                }
-            } else {
-                // Para atualização com o id
-                const dataToUpdate: IDetalhePessoa = {
-                    id: Number(id),
-                    ...baseData
-                };
-                
-                const result = await PessoasService.updateById(Number(id), dataToUpdate);
-                if (result instanceof Error) {
-                    alert(result.message);
-                    throw result;
-                } else {
-                    alert('Pessoa atualizada com sucesso!');
-                }
-            }
-        } catch (error: any) {
-            // Tratamento de erros de validação do Yup
-            if (error.name === 'ValidationError') {
-                const errorMessages = error.errors.join('\n');
-                alert(errorMessages);
-            } 
-            // Tratamento de erros da API
-            else if (error instanceof Error) {
-                alert(error.message);
-            } 
-            // Erro genérico
-            else {
-                alert('Erro ao salvar os dados');
-            }
-            // Não relançar o erro para evitar que o useVForm tente processá-lo novamente
-            return;
-        } finally {
-            setIsLoading(false);
-        }
+                    if (id === 'nova') {
+                        PessoasService
+                            .create(baseData)
+                            .then((result) => {
+                                setIsLoading(false);
+
+                                if (result instanceof Error) {
+                                    alert(result.message);
+                                    reject(result);
+                                } else {
+                                    alert('Pessoa criada com sucesso!');
+                                    resolve();
+                                }
+                            })
+                            .catch((error) => {
+                                setIsLoading(false);
+                                reject(error);
+                            });
+                    } else {
+                        const dataToUpdate: IDetalhePessoa = {
+                            id: Number(id),
+                            ...baseData
+                        };
+
+                        PessoasService
+                            .updateById(Number(id), dataToUpdate)
+                            .then((result) => {
+                                setIsLoading(false);
+
+                                if (result instanceof Error) {
+                                    alert(result.message);
+                                    reject(result);
+                                } else {
+                                    alert('Pessoa atualizada com sucesso!');
+                                    resolve();
+                                }
+                            })
+                            .catch((error) => {
+                                setIsLoading(false);
+                                reject(error);
+                            });
+                    }
+                })
+                .catch((errors: yup.ValidationError) => {
+                    const errorMessages = errors.inner.map(error => error.message).join('\n');
+                    alert(errorMessages);
+                    // Rejeita com um erro simples para evitar o ValidationError no console
+                    reject(new Error('Erro de validação'));
+                });
+        });
     };
 
-    const handleSaveAndNewAction = async (data: IFormData): Promise<void> => {
-        await handleSaveAction(data);
-        // Se for criação nova, já navegamos no handleSaveAction
-        // Se for edição, navegamos para novo
-        if (id !== 'nova') {
-            reset({
-                nomeCompleto: '',
-                email: '',
-                cidadeId: ''
+    const handleSaveAndNewAction = (data: IFormData): Promise<void> => {
+        return handleSaveAction(data)
+            .then(() => {
+                // Se for edição, navegamos para novo
+                if (id !== 'nova') {
+                    reset({
+                        nomeCompleto: '',
+                        email: '',
+                        cidadeId: ''
+                    });
+                    setNome('');
+                    navigate('/pessoas/detalhe/nova');
+                }
             });
-            setNome('');
-            navigate('/pessoas/detalhe/nova');
-        }
     };
 
-    const handleSaveAndCloseAction = async (data: IFormData): Promise<void> => {
-        await handleSaveAction(data);
-        // Navega para a listagem independente de ser novo ou edição
-        navigate('/pessoas');
+    const handleSaveAndCloseAction = (data: IFormData): Promise<void> => {
+        return handleSaveAction(data)
+            .then(() => {
+                // Navega para a listagem independente de ser novo ou edição
+                navigate('/pessoas');
+            });
     };
 
     const {

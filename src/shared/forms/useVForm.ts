@@ -21,7 +21,12 @@ export const useVForm = ({
         setIsSaveAndNew(false);
         setIsSaveAndClose(false);
         handleSubmit(async (data) => {
-            await onSave(data);
+            try {
+                await onSave(data);
+            } catch (error) {
+                // Não faz nada com o erro, pois já foi tratado no onSave
+                console.log('Erro capturado pelo useVForm:', error);
+            }
         })();
     }, [handleSubmit, onSave]);
 
@@ -29,9 +34,14 @@ export const useVForm = ({
         setIsSaveAndNew(true);
         setIsSaveAndClose(false);
         handleSubmit(async (data) => {
-            await onSave(data);
-            if (onSaveAndNew) {
-                await onSaveAndNew(data);
+            try {
+                await onSave(data);
+                if (onSaveAndNew) {
+                    await onSaveAndNew(data);
+                }
+            } catch (error) {
+                // Não faz nada com o erro, pois já foi tratado no onSave
+                console.log('Erro capturado pelo useVForm:', error);
             }
         })();
     }, [handleSubmit, onSave, onSaveAndNew]);
@@ -40,9 +50,14 @@ export const useVForm = ({
         setIsSaveAndNew(false);
         setIsSaveAndClose(true);
         handleSubmit(async (data) => {
-            await onSave(data);
-            if (onSaveAndClose) {
-                await onSaveAndClose(data);
+            try {
+                await onSave(data);
+                if (onSaveAndClose) {
+                    await onSaveAndClose(data);
+                }
+            } catch (error) {
+                // Não faz nada com o erro, pois já foi tratado no onSave
+                console.log('Erro capturado pelo useVForm:', error);
             }
         })();
     }, [handleSubmit, onSave, onSaveAndClose]);
