@@ -28,28 +28,24 @@ const ensureNumberId = (id: any): number => {
     return Date.now() % 10000;
 };
 
-export interface IListagemPessoa {
+export interface IListagemCidade {
     id: number;
-    cidadeId: number;
-    nomeCompleto: string;
-    email: string;
+    nome: string;
 };
 
-export interface IDetalhePessoa {
+export interface IDetalheCidade {
     id: number;
-    cidadeId: number;
-    nomeCompleto: string;
-    email: string;
+    nome: string;
 };
 
-type TPessoasComTotalCount = {
-    data: IListagemPessoa[];
+type TCidadesComTotalCount = {
+    data: IListagemCidade[];
     totalCount: number;
 };
 
-const getAll = async (page = 1, filter = ''): Promise<TPessoasComTotalCount | Error> => {
+const getAll = async (page = 1, filter = ''): Promise<TCidadesComTotalCount | Error> => {
   try {
-    const urlRelativa = `/pessoas?_per_page=10000`;
+    const urlRelativa = `/cidades?_per_page=10000`;
     const { data } = await api.get(urlRelativa);
 
     if (data) {
@@ -62,17 +58,15 @@ const getAll = async (page = 1, filter = ''): Promise<TPessoasComTotalCount | Er
       }
 
       // Converte IDs para números
-      const listaCompleta: IListagemPessoa[] = rawData.map(item => ({
+      const listaCompleta: IListagemCidade[] = rawData.map(item => ({
         id: ensureNumberId(item.id),
-        cidadeId: ensureNumberId(item.cidadeId),
-        nomeCompleto: item.nomeCompleto || '',
-        email: item.email || ''
-      })).filter(item => item.nomeCompleto);
+        nome: item.nome || ''
+      })).filter(item => item.nome);
 
       // Filtra
       const listaFiltrada = filter
         ? listaCompleta.filter(item => 
-            item.nomeCompleto.toLowerCase().includes(filter.toLowerCase()))
+            item.nome.toLowerCase().includes(filter.toLowerCase()))
         : listaCompleta;
 
       // Pagina
@@ -94,17 +88,15 @@ const getAll = async (page = 1, filter = ''): Promise<TPessoasComTotalCount | Er
   }
 };
 
-const getById = async (id: number): Promise<IDetalhePessoa | Error> => {
+const getById = async (id: number): Promise<IDetalheCidade | Error> => {
     try {
         const numericId = ensureNumberId(id);
-        const { data } = await api.get(`/pessoas/${numericId}`);
+        const { data } = await api.get(`/cidades/${numericId}`);
 
         if (data) {
             return {
                 id: ensureNumberId(data.id),
-                cidadeId: ensureNumberId(data.cidadeId),
-                nomeCompleto: data.nomeCompleto || '',
-                email: data.email || ''
+                nome: data.nome
             };
         }
         return new Error('Erro ao consultar o registro.');
@@ -114,9 +106,9 @@ const getById = async (id: number): Promise<IDetalhePessoa | Error> => {
     }
 };
 
-const create = async (dados: Omit<IDetalhePessoa, 'id'>): Promise<number | Error> => {
+const create = async (dados: Omit<IDetalheCidade, 'id'>): Promise<number | Error> => {
     try {
-        const { data } = await api.post(`/pessoas`, dados);
+        const { data } = await api.post(`/cidades`, dados);
         if (data) {
             const numericId = ensureNumberId(data.id);
             console.log('ID retornado:', data.id, '→ ID normalizado:', numericId);
@@ -129,14 +121,10 @@ const create = async (dados: Omit<IDetalhePessoa, 'id'>): Promise<number | Error
     }
 };
 
-const updateById = async (id: number, dados: IDetalhePessoa): Promise<void | Error> => {
+const updateById = async (id: number, dados: IDetalheCidade): Promise<void | Error> => {
     try {
         const numericId = ensureNumberId(id);
-        await api.put(`/pessoas/${numericId}`, { 
-            ...dados, 
-            id: numericId,
-            cidadeId: ensureNumberId(dados.cidadeId)
-        });
+        await api.put(`/cidades/${numericId}`, { ...dados, id: numericId });
     } catch (error) {
         console.error(error);
         return new Error((error as { message: string }).message || 'Erro ao atualizar.');
@@ -146,14 +134,14 @@ const updateById = async (id: number, dados: IDetalhePessoa): Promise<void | Err
 const deleteById = async (id: number): Promise<void | Error> => {
     try {
         const numericId = ensureNumberId(id);
-        await api.delete(`/pessoas/${numericId}`);
+        await api.delete(`/cidades/${numericId}`);
     } catch (error) {
         console.error(error);
         return new Error((error as { message: string }).message || 'Erro ao deletar.');
     }
 };
 
-export const PessoasService = {
+export const CidadesService = {
     getAll,
     getById,
     create,
