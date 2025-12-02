@@ -28,7 +28,6 @@ export const ListagemDeCidades: React.FC = () => {
   useEffect(() => {
     setIsLoading(true);
 
-    // Se o debounce não aceita delay como segundo parâmetro, remova-o
     debounce(() => {
       CidadesService.getAll(pagina, busca)
         .then((result) => {
@@ -50,26 +49,25 @@ export const ListagemDeCidades: React.FC = () => {
           console.error('Erro ao buscar cidades:', error);
         });
     });
-    // Remova o 300 do segundo parâmetro se o hook não aceitar
   }, [busca, pagina]);
 
-  const handleDelete = (id: number) => {
+const handleDelete = (id: string | number) => {
     if (window.confirm('Realmente deseja apagar?')) {
-      CidadesService.deleteById(id)
-        .then(result => {
-          if (result instanceof Error) {
-            alert(result.message);
-          } else {
-            setRows(oldRows => {
-              return [
-                ...oldRows.filter(oldRow => oldRow.id !== id)
-              ]
+        CidadesService.deleteById(id)
+            .then(result => {
+                if (result instanceof Error) {
+                    alert(result.message);
+                } else {
+                    setRows(oldRows => {
+                        return [
+                            ...oldRows.filter(oldRow => oldRow.id !== id)
+                        ];
+                    });
+                    alert('Registro apagado com sucesso!');
+                }
             });
-            alert('Registro apagado com sucesso!');
-          }
-        });
     }
-  };
+};
 
   return (
     <LayoutBaseDePagina
@@ -88,7 +86,7 @@ export const ListagemDeCidades: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Ações</TableCell>
+              <TableCell width={100}>Ações</TableCell>
               <TableCell>Nome</TableCell>
             </TableRow>
           </TableHead>

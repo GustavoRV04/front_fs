@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { VTextField, useVForm } from "../../shared/forms";
 import { Box, Paper, Stack, Typography, LinearProgress } from "@mui/material";
 import * as yup from 'yup';
+import { AutoCompleteCidade } from "./components/AutoCompleteCidade";
 
 interface IFormData {
     nomeCompleto: string;
@@ -241,13 +242,7 @@ export const DetalheDePessoas: React.FC = () => {
                                 label="E-mail" 
                                 disabled={isLoading} 
                             />
-                            <VTextField
-                                fullWidth 
-                                control={control}
-                                name="cidadeId" 
-                                label="Cidade" 
-                                disabled={isLoading} 
-                            />
+                            <AutoCompleteCidade/>
                         </Stack>
                     </Box>
                 </Paper>

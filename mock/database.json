@@ -74,6 +74,37 @@
     }
   ],
   "cidades": [
-
+    {
+      "id": "f8e6",
+      "nome": "Porto Alegree"
+    },
+    {
+      "id": "ea73",
+      "nome": "Caxias"
+    },
+    {
+      "id": "c404",
+      "nome": "teste"
+    },
+    {
+      "id": "4b07",
+      "nome": "adada"
+    },
+    {
+      "id": "43d4",
+      "nome": "BELEM"
+    },
+    {
+      "id": "fc41",
+      "nome": "rIO"
+    },
+    {
+      "id": "0aa0",
+      "nome": "BRUSQUE"
+    },
+    {
+      "id": "bb43",
+      "nome": "Porto Alegre"
+    }
   ]
 }

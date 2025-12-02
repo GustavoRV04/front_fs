@@ -6,33 +6,18 @@ import { IDetalheCidade, CidadesService } from "../../shared/services/api/cidade
 import { useForm } from "react-hook-form";
 import { VTextField } from "../../shared/forms";
 import { Box, Paper, Stack, Typography, LinearProgress } from "@mui/material";
-import * as yup from 'yup';
 
 interface IFormData {
     nome: string;
 }
 
-const formValidationSchema: yup.Schema<IFormData> = yup.object().shape({
-    nome: yup.string().required('Nome é obrigatório').min(3, 'Nome deve ter pelo menos 3 caracteres'),
-});
-
 export const DetalheDeCidades: React.FC = () => {
     const { id = 'nova' } = useParams<'id'>();
-
-    const ensureNumberId = (id: any): number => {
-    if (typeof id === 'number') return id;
-    if (typeof id === 'string') {
-        const num = parseInt(id, 10);
-        return isNaN(num) ? 0 : num;
-    }
-    return 0;
-};
-
     const navigate = useNavigate();
 
     const [isLoading, setIsLoading] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [nome, setNome] = useState('');
+    const [cidadeId, setCidadeId] = useState<string | number>('');
 
     const { handleSubmit, control, reset } = useForm<IFormData>({
         defaultValues: {
@@ -40,169 +25,98 @@ export const DetalheDeCidades: React.FC = () => {
         }
     });
 
-   const handleSaveAction = (data: IFormData): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        if (isSaving) {
-            resolve();
+    // Salvar
+    const onSave = async (data: IFormData) => {
+        if (!data.nome.trim() || data.nome.length < 3) {
+            alert('Nome deve ter pelo menos 3 caracteres');
             return;
         }
 
-        setIsSaving(true);
-        
-        formValidationSchema
-            .validate(data, { abortEarly: false })
-            .then((dadosValidados) => {
-                setIsLoading(true);
-
-                const baseData = {
-                    nome: dadosValidados.nome,
-                };
-
-                if (id === 'nova') {
-                    CidadesService
-                        .create(baseData)
-                        .then((result) => {
-                            setIsLoading(false);
-                            setIsSaving(false);
-
-                            if (result instanceof Error) {
-                                alert(result.message);
-                                reject(result);
-                            } else {
-                                // result JÁ É número graças ao serviço
-                                console.log('Cidade criada com ID (número):', result);
-                                alert('Cidade criada com sucesso!');
-                                resolve();
-                            }
-                        })
-                        .catch((error) => {
-                            setIsLoading(false);
-                            setIsSaving(false);
-                            console.error('Erro na criação:', error);
-                            alert(error.message || 'Erro ao salvar');
-                            reject(error);
-                        });
-                } else {
-                    // Garante que o ID seja número
-                    const numericId = ensureNumberId(id);
-                    const dataToUpdate: IDetalheCidade = {
-                        id: numericId,
-                        ...baseData
-                    };
-
-                    CidadesService
-                        .updateById(numericId, dataToUpdate)
-                        .then((result) => {
-                            setIsLoading(false);
-                            setIsSaving(false);
-
-                            if (result instanceof Error) {
-                                alert(result.message);
-                                reject(result);
-                            } else {
-                                alert('Cidade atualizada com sucesso!');
-                                resolve();
-                            }
-                        })
-                        .catch((error) => {
-                            setIsLoading(false);
-                            setIsSaving(false);
-                            alert(error.message || 'Erro ao salvar');
-                            reject(error);
-                        });
-                }
-            })
-            .catch((errors: yup.ValidationError) => {
-                setIsSaving(false);
-                const errorMessages = errors.inner.map(error => error.message).join('\n');
-                alert(errorMessages);
-                resolve();
-            });
-    });
-};
-
-    // Funções para os botões - VERSÃO SEGURA
-    const handleSave = () => {
-        handleSubmit(async (data) => {
-            try {
-                await handleSaveAction(data);
-                // Para salvar simples, não faz nada
-            } catch (error) {
-                // Ignora erros
-            }
-        })();
-    };
-
-    const handleSaveAndClose = () => {
-        handleSubmit(async (data) => {
-            try {
-                await handleSaveAction(data);
-                // Navega para listagem sem tentar consultar o registro
-                navigate('/cidades');
-            } catch (error) {
-                // Não navega em caso de erro
-            }
-        })();
-    };
-
-    const handleSaveAndNew = () => {
-        handleSubmit(async (data) => {
-            try {
-                await handleSaveAction(data);
-                // Reseta o formulário para novo cadastro
-                reset({ nome: '' });
-                setNome('');
-                navigate('/cidades/detalhe/nova');
-            } catch (error) {
-                // Não navega em caso de erro
-            }
-        })();
-    };
-
-    useEffect(() => {
-    if (id !== 'nova') {
         setIsLoading(true);
-        
-        // Garante que o ID seja número
-        const numericId = ensureNumberId(id);
-        
-        CidadesService.getById(numericId)
-        .then((result) => {
-            setIsLoading(false);
-            if (result instanceof Error) {
-                alert(result.message);
-                navigate('/cidades');
-            } else {
-                setNome(result.nome);
-                reset({
-                    nome: result.nome,
-                });
-            }
-        })
-        .catch(() => {
-            setIsLoading(false);
-        });
-    } else {
-        reset({
-            nome: '',
-        });
-    }
-}, [id]);
 
-    const handleDelete = (id: number) => {
-        if (window.confirm('Realmente deseja apagar?')) {
+        try {
+            if (id === 'nova') {
+                // Criar
+                const novoId = await CidadesService.create(data);
+                if (novoId instanceof Error) {
+                    alert(novoId.message);
+                } else {
+                    alert('Cidade criada com sucesso!');
+                    navigate(`/cidades/detalhe/${novoId}`);
+                }
+            } else {
+                // Atualizar - usa o ID REAL (string "f8e6")
+                const result = await CidadesService.updateById(cidadeId, {
+                    id: cidadeId,
+                    nome: data.nome
+                });
+                
+                if (result instanceof Error) {
+                    alert(result.message);
+                } else {
+                    alert('Cidade atualizada com sucesso!');
+                }
+            }
+        } catch (error) {
+            alert('Erro ao salvar: ' + (error as Error).message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Carregar para edição
+    useEffect(() => {
+        if (id !== 'nova') {
             setIsLoading(true);
-            CidadesService.deleteById(id)
-                .then(result => {
+            setCidadeId(id); // Mantém como string ("f8e6")
+            
+            console.log(`🔄 Carregando cidade ID: ${id} (tipo: ${typeof id})`);
+            
+            CidadesService.getById(id)
+                .then((result) => {
                     setIsLoading(false);
                     if (result instanceof Error) {
                         alert(result.message);
-                    } else {
-                        alert('Registro apagado com sucesso!');
                         navigate('/cidades');
+                    } else {
+                        console.log('✅ Cidade carregada:', result);
+                        setNome(result.nome);
+                        setCidadeId(result.id); // Atualiza com ID real
+                        reset({
+                            nome: result.nome,
+                        });
                     }
                 })
-                .catch(() => setIsLoading(false));
+                .catch((error) => {
+                    setIsLoading(false);
+                    alert('Erro ao carregar cidade: ' + error.message);
+                });
+        } else {
+            reset({ nome: '' });
+        }
+    }, [id]);
+
+    // Deletar
+    const onDelete = async () => {
+        if (!window.confirm('Realmente deseja apagar esta cidade?')) {
+            return;
+        }
+
+        setIsLoading(true);
+        
+        try {
+            // Usa o ID REAL (string "f8e6")
+            const result = await CidadesService.deleteById(cidadeId);
+            if (result instanceof Error) {
+                alert(result.message);
+            } else {
+                alert('Cidade apagada com sucesso!');
+                navigate('/cidades');
+            }
+        } catch (error) {
+            alert('Erro ao apagar: ' + (error as Error).message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -215,12 +129,22 @@ export const DetalheDeCidades: React.FC = () => {
                     mostrarBotaoSalvarEVoltar
                     mostrarBotaoNovo={id !== 'nova'}
                     mostrarBotaoApagar={id !== 'nova'}
-                    aoClicarEmApagar={() => handleDelete(Number(id))}
+                    aoClicarEmApagar={onDelete}
                     aoClicarEmNovo={() => navigate('/cidades/detalhe/nova')}
-                    aoClicarEmSalvar={handleSave}
+                    aoClicarEmSalvar={handleSubmit(onSave)}
                     aoClicarEmVoltar={() => navigate('/cidades')}
-                    aoClicarEmSalvarEVoltar={handleSaveAndClose}
-                    aoClicarEmSalvarENovo={handleSaveAndNew}
+                    aoClicarEmSalvarEVoltar={handleSubmit((data) => {
+                        onSave(data);
+                        navigate('/cidades');
+                    })}
+                    aoClicarEmSalvarENovo={handleSubmit((data) => {
+                        onSave(data);
+                        if (id !== 'nova') {
+                            reset({ nome: '' });
+                            setNome('');
+                            navigate('/cidades/detalhe/nova');
+                        }
+                    })}
                 />
             }
         >
@@ -239,7 +163,7 @@ export const DetalheDeCidades: React.FC = () => {
                             maxWidth: { xs: '80%', sm: 400, md: 600, lg: 700 },
                         }}
                     >
-                        {(isLoading) && (
+                        {isLoading && (
                             <LinearProgress variant="indeterminate" />
                         )}
 
